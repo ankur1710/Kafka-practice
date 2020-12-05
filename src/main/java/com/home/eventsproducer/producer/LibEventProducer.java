@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.home.eventsproducer.domain.LibraryEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -62,6 +65,35 @@ public class LibEventProducer {
         return sendResult;
     }
 
+
+    public void sendLibraryEventProducerRecord(LibraryEvent libraryEvent){
+        try {
+            Integer key  = libraryEvent.getLibraryEventId();
+            String value = objectMapper.writeValueAsString(libraryEvent);
+            ProducerRecord producerRecord = buildProducerRecord(topic,key,value);
+            ListenableFuture<SendResult<Integer,String>> listenableFuture =
+                    kafkaTemplate.send(producerRecord);
+            listenableFuture.addCallback(new ListenableFutureCallback<SendResult<Integer, String>>() {
+                @Override
+                public void onFailure(Throwable throwable) {
+                    handleFailure(key,value,throwable);
+                }
+
+                @Override
+                public void onSuccess(SendResult<Integer, String> result) {
+                    handleSuccess(key,value,result);
+                }
+            });
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private ProducerRecord buildProducerRecord(String topic, Integer key, String value) {
+        List headers = new ArrayList();
+        headers.add("Content-Type");
+        return new ProducerRecord(topic,1,key,value,null);
+    }
 
 
     private void handleFailure(Integer key, String value, Throwable ex) {
