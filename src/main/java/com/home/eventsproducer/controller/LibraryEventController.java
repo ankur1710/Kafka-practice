@@ -1,6 +1,7 @@
 package com.home.eventsproducer.controller;
 
 import com.home.eventsproducer.domain.LibraryEvent;
+import com.home.eventsproducer.domain.LibraryEventType;
 import com.home.eventsproducer.producer.LibEventProducer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,8 @@ public class LibraryEventController {
 
         @PostMapping("v1/libraryevent")
         public ResponseEntity<LibraryEvent> postLibraryEvent(@RequestBody LibraryEvent libraryEvent){
+            libraryEvent.setLibraryEventType(LibraryEventType.NEW);
+
             //Invoke the Kafka Producer
             log.info("before send library events");
             //libEventProducer.sendLibraryEventAsync(libraryEvent);
