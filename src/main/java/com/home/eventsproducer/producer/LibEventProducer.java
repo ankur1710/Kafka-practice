@@ -5,6 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.home.eventsproducer.domain.LibraryEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.Headers;
+import org.apache.kafka.common.header.internals.RecordHeader;
+import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -90,9 +94,9 @@ public class LibEventProducer {
     }
 
     private ProducerRecord buildProducerRecord(String topic, Integer key, String value) {
-        List headers = new ArrayList();
-        headers.add("Content-Type");
-        return new ProducerRecord(topic,1,key,value,null);
+        List<RecordHeader> recordHeaders = new ArrayList<>();
+        recordHeaders.add(new RecordHeader("event-source","scanner".getBytes()));
+        return new ProducerRecord(topic,1,key,value,recordHeaders);
     }
 
 
