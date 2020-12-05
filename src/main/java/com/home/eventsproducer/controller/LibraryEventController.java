@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 @RestController
 @Slf4j
 public class LibraryEventController {
@@ -20,7 +22,7 @@ public class LibraryEventController {
         LibEventProducer libEventProducer;
 
         @PostMapping("v1/libraryevent")
-        public ResponseEntity<LibraryEvent> postLibraryEvent(@RequestBody LibraryEvent libraryEvent){
+        public ResponseEntity<LibraryEvent> postLibraryEvent(@RequestBody @Valid LibraryEvent libraryEvent){
             libraryEvent.setLibraryEventType(LibraryEventType.NEW);
 
             //Invoke the Kafka Producer

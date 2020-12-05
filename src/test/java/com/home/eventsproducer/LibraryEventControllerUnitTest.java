@@ -59,5 +59,31 @@ public class LibraryEventControllerUnitTest {
 
     }
 
+    @Test
+    void postLibraryEventNullBook() throws Exception {
+        //given
+        Book book = Book.builder()
+                .bookId(1)
+                .bookName("bookname")
+                .bookAuthor("bookAuthor")
+                .build();
+        LibraryEvent libraryEvent = LibraryEvent.builder()
+                .libraryEventId(null)
+                .book(null)
+                .libraryEventType(LibraryEventType.NEW)
+                .build();
+
+        //this is added to simulate the actual producer method call asynchronous
+        doNothing().when(libEventProducer).sendLibraryEventProducerRecord(isA(LibraryEvent.class));
+
+        //when
+        mockMvc.perform(post("/v1/libraryevent")
+                .content(objectMapper.writeValueAsString(libraryEvent))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest()); // this the test case
+
+    }
+
+
 
 }
