@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,7 +22,9 @@ public class LibraryEventController {
         public ResponseEntity<LibraryEvent> postLibraryEvent(@RequestBody LibraryEvent libraryEvent){
             //Invoke the Kafka Producer
             log.info("before send library events");
-            libEventProducer.sendLibraryEvent(libraryEvent);
+            //libEventProducer.sendLibraryEventAsync(libraryEvent);
+            SendResult<Integer,String> sendResult = libEventProducer.sendLibraryEventSync(libraryEvent);
+            log.info("SendResult is {}: "+ sendResult.toString());
             log.info("after send library events");
 
             return ResponseEntity.status(HttpStatus.CREATED).body(libraryEvent);
