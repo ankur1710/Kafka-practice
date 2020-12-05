@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -60,13 +61,14 @@ public class LibraryEventControllerUnitTest {
     }
 
     @Test
-    void postLibraryEventNullBook() throws Exception {
+    void postLibraryEvent_4xxError() throws Exception {
         //given
         Book book = Book.builder()
                 .bookId(1)
-                .bookName("bookname")
-                .bookAuthor("bookAuthor")
+                .bookName(null)
+                .bookAuthor(null)
                 .build();
+
         LibraryEvent libraryEvent = LibraryEvent.builder()
                 .libraryEventId(null)
                 .book(null)
@@ -75,12 +77,14 @@ public class LibraryEventControllerUnitTest {
 
         //this is added to simulate the actual producer method call asynchronous
         doNothing().when(libEventProducer).sendLibraryEventProducerRecord(isA(LibraryEvent.class));
+        String expectedErrorMessage = "book, must not be null";
 
         //when
         mockMvc.perform(post("/v1/libraryevent")
                 .content(objectMapper.writeValueAsString(libraryEvent))
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest()); // this the test case
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().string(expectedErrorMessage));
 
     }
 

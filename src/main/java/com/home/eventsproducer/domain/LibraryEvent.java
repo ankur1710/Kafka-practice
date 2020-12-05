@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
 public class LibraryEvent {
     private Integer libraryEventId;
     @NotNull // the test will fail if I add try to add a null book
-    //@Valid //
+    @Valid //
     private Book book;
     private LibraryEventType libraryEventType;
 }
