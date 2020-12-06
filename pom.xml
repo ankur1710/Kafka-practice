@@ -46,7 +46,7 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
+<!--			<scope>test</scope>-->
 			<exclusions>
 				<exclusion>
 					<groupId>org.junit.vintage</groupId>
@@ -58,6 +58,10 @@
 			<groupId>org.springframework.kafka</groupId>
 			<artifactId>spring-kafka-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-test</artifactId>
 		</dependency>
 	</dependencies>
 

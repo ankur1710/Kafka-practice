@@ -12,8 +12,7 @@ import org.springframework.http.*;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.TestPropertySource;
 
-@SpringBootTest(classes = LibraryEventControllerIntegrationTestEmbeddedKafka.class,
-		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @EmbeddedKafka(topics = {"library-events"},partitions = 3)
 @TestPropertySource(properties = {"spring.kafka.producer.bootstrap-servers=${spring.embedded.kafka.brokers}"})
 public class LibraryEventControllerIntegrationTestEmbeddedKafka {
@@ -39,12 +38,11 @@ public class LibraryEventControllerIntegrationTestEmbeddedKafka {
 		headers.add("content-type", MediaType.APPLICATION_JSON.toString());
 		HttpEntity<LibraryEvent> request = new HttpEntity<>(libraryEvent,headers);
 
-		System.out.println("hi");
 		//when
-		ResponseEntity<LibraryEvent> responseEntity = testRestTemplate.exchange("v1/libraryevent", HttpMethod.POST,request,LibraryEvent.class);
+		ResponseEntity<LibraryEvent> responseEntity = testRestTemplate.exchange("http://localhost:8081/v1/libraryevent", HttpMethod.POST,request,LibraryEvent.class);
 
 		//then
-		Assert.assertEquals(HttpStatus.CREATED,HttpStatus.CREATED);
+		Assert.assertEquals(HttpStatus.CREATED,responseEntity.getStatusCode());
 	}
 
 

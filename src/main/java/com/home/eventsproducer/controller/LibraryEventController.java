@@ -28,10 +28,10 @@ public class LibraryEventController {
 
             //Invoke the Kafka Producer
             log.info("before send library events");
-            //libEventProducer.sendLibraryEventAsync(libraryEvent);
+            libEventProducer.sendLibraryEventAsync(libraryEvent);
             //SendResult<Integer,String> sendResult = libEventProducer.sendLibraryEventSync(libraryEvent);
             //log.info("SendResult is {}: "+ sendResult.toString());
-            libEventProducer.sendLibraryEventProducerRecord(libraryEvent);
+            //libEventProducer.sendLibraryEventProducerRecord(libraryEvent);
             log.info("after send library events");
 
             return ResponseEntity.status(HttpStatus.CREATED).body(libraryEvent);

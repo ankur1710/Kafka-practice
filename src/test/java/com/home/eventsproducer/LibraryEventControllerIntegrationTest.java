@@ -6,13 +6,18 @@ import com.home.eventsproducer.domain.LibraryEventType;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@SpringBootTest(classes = LibraryEventControllerIntegrationTest.class)
+@SpringBootTest
 public class LibraryEventControllerIntegrationTest {
+
+
+//	TestRestTemplate testRestTemplate = new TestRestTemplate();
 
 	@Autowired
 	TestRestTemplate testRestTemplate;
@@ -35,12 +40,12 @@ public class LibraryEventControllerIntegrationTest {
 		headers.add("content-type", MediaType.APPLICATION_JSON.toString());
 		HttpEntity<LibraryEvent> request = new HttpEntity<>(libraryEvent,headers);
 
-		System.out.println("hi");
+
 		//when
-		ResponseEntity<LibraryEvent> responseEntity = testRestTemplate.exchange("v1/libraryevent", HttpMethod.POST,request,LibraryEvent.class);
+		ResponseEntity<LibraryEvent> responseEntity = testRestTemplate.exchange("http://localhost:8081/v1/libraryevent", HttpMethod.POST,request,LibraryEvent.class);
 
 		//then
-		Assert.assertEquals(HttpStatus.CREATED,HttpStatus.CREATED);
+		Assert.assertEquals(HttpStatus.CREATED,responseEntity.getStatusCode());
 	}
 
 

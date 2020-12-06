@@ -27,8 +27,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-@SpringBootTest(classes = LibraryEventControllerIntegrationTestEmbeddedKafkaConsumer.class,
-		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @EmbeddedKafka(topics = {"library-events"},partitions = 3)
 @TestPropertySource(properties = {"spring.kafka.producer.bootstrap-servers=${spring.embedded.kafka.brokers}"})
 public class LibraryEventControllerIntegrationTestEmbeddedKafkaConsumer {
@@ -58,7 +57,7 @@ public class LibraryEventControllerIntegrationTestEmbeddedKafkaConsumer {
 	//test will wait for 5secs for producer to write in the topic.
 	@Test
 	@Timeout(5)
-	public void postLibraryEvent(){
+	public void postLibraryEvent() throws InterruptedException {
 
 		//given
 		Book book = Book.builder()
@@ -75,24 +74,28 @@ public class LibraryEventControllerIntegrationTestEmbeddedKafkaConsumer {
 		headers.add("content-type", MediaType.APPLICATION_JSON.toString());
 		HttpEntity<LibraryEvent> request = new HttpEntity<>(libraryEvent,headers);
 
-		System.out.println("hi");
+
 		//when
-		ResponseEntity<LibraryEvent> responseEntity = testRestTemplate.exchange("v1/libraryevent", HttpMethod.POST,request,LibraryEvent.class);
 
-		//then
-		assertEquals(HttpStatus.CREATED,HttpStatus.CREATED);
+			ResponseEntity<LibraryEvent> responseEntity = testRestTemplate.exchange("http://localhost:8081/v1/libraryevent", HttpMethod.POST, request, LibraryEvent.class);
 
-		ConsumerRecord<Integer,String> consumerRecord = KafkaTestUtils.getSingleRecord(consumer,"library-events");
-		String expected = "{\n" +
-				"    \"libraryEventId\": null,\n" +
-				"    \"book\": {\n" +
-				"        \"bookId\": 1,\n" +
-				"        \"bookName\": \"bookname \",\n" +
-				"        \"bookAuthor\": \"bookAuthor\"\n" +
-				"    },\n" +
-				"    \"libraryEventType\": \"NEW\"\n" +
-				"}";
-		assertEquals(expected,consumerRecord.value());
+			//then
+			Assert.assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
+
+			ConsumerRecord<Integer, String> consumerRecord = KafkaTestUtils.getSingleRecord(consumer, "library-events");
+
+			String expected = "{\n" +
+					"    \"libraryEventId\": null,\n" +
+					"    \"book\": {\n" +
+					"        \"bookId\": 1,\n" +
+					"        \"bookName\": \"bookname \",\n" +
+					"        \"bookAuthor\": \"bookAuthor\"\n" +
+					"    },\n" +
+					"    \"libraryEventType\": \"NEW\"\n" +
+					"}";
+			System.out.println(consumerRecord.value());
+			assertEquals(expected, consumerRecord.value());
+
 	}
 
 
