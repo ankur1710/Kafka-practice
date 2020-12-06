@@ -1,8 +1,11 @@
 package com.home.eventconsumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.home.eventconsumer.consumer.LibEventsConsumer;
+import com.home.eventconsumer.entity.Book;
 import com.home.eventconsumer.entity.LibraryEvent;
+import com.home.eventconsumer.entity.LibraryEventType;
 import com.home.eventconsumer.jpa.LibraryEventRepository;
 import com.home.eventconsumer.service.LibraryEventService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -21,6 +24,7 @@ import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -53,6 +57,9 @@ class EventConsumerIntegrationEmbeddedJPATest {
 
 	@Autowired
 	LibraryEventRepository libraryEventRepository;
+
+	@Autowired
+	ObjectMapper objectMapper;
 
 	@BeforeEach
 	void setup(){
@@ -96,6 +103,53 @@ class EventConsumerIntegrationEmbeddedJPATest {
 			assert libraryEvent.getLibraryEventId() != null;
 			assertEquals(596,libraryEvent.getBook().getBookId());
 		});
+	}
+
+	@Test
+	void updateLibEvent() throws ExecutionException, InterruptedException, JsonProcessingException {
+		//given
+		String jsonMessage = "{\n" +
+				"    \"libraryEventId\": null,\n" +
+				"    \"book\": {\n" +
+				"        \"bookId\": 596,\n" +
+				"        \"bookName\": \"unix \",\n" +
+				"        \"bookAuthor\": \"kanetkar\"\n" +
+				"    },\n" +
+				"    \"libraryEventType\": \"NEW\"\n" +
+				"}";
+
+		LibraryEvent libraryEvent = objectMapper.readValue(jsonMessage,LibraryEvent.class);
+		libraryEvent.getBook().setLibraryEvent(libraryEvent);
+		libraryEventRepository.save(libraryEvent); // in order to do the update we must save an entry first
+
+		Book book = Book.builder()
+				.bookId(596)
+				.bookName("kafka")
+				.bookAuthor("kafkaAuthor")
+				.build();
+		libraryEvent.setBook(book);
+		libraryEvent.setLibraryEventType(LibraryEventType.UPDATE);
+
+		String updateJSON = objectMapper.writeValueAsString(libraryEvent);
+
+
+		kafkaTemplate.send("library-events",updateJSON).get();
+
+		//when
+		// this is to block the thread so that Consumer can read the message
+		CountDownLatch latch = new CountDownLatch(1);
+		latch.await(3, TimeUnit.SECONDS);
+
+		//then
+		// here we are verifying that onMessage method from the libEventsConsumerSpy is invocked once or not
+		verify(libEventsConsumerSpy,times(1)).onMessage(isA(ConsumerRecord.class));
+		verify(libraryEventServiceSpy,times(1)).processLibraryEvent(isA(ConsumerRecord.class));
+
+		LibraryEvent persistedLibEvent =
+				libraryEventRepository.findById(libraryEvent.getLibraryEventId()).get();
+		assertEquals("kafka",persistedLibEvent.getBook().getBookName());
+		assertEquals("kafkaAuthor",persistedLibEvent.getBook().getBookAuthor());
+
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.home.eventconsumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.home.eventconsumer.config.LibraryEventConsumerConfig;
 import com.home.eventconsumer.consumer.LibEventsConsumer;
 import com.home.eventconsumer.entity.LibraryEvent;
@@ -50,6 +51,8 @@ class EventConsumerIntegrationTestsEmbeddedKafka {
 	@SpyBean // this will give you the actual bean
 	LibraryEventService libraryEventServiceSpy;
 
+
+
 	@BeforeEach
 	void setup(){
 		//get all the containers from the brokers.
@@ -84,5 +87,8 @@ class EventConsumerIntegrationTestsEmbeddedKafka {
 		verify(libEventsConsumerSpy,times(1)).onMessage(isA(ConsumerRecord.class));
 		verify(libraryEventServiceSpy,times(1)).processLibraryEvent(isA(ConsumerRecord.class));
 	}
+
+
+
 
 }
