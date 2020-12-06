@@ -1,0 +1,20 @@
+server:
+  port: 8082
+
+---
+spring:
+  profiles:
+    active: local
+
+---
+
+spring:
+  profiles: local
+  kafka:
+    consumer:
+      bootstrap-servers: localhost:9092
+      key-deserilizer: org.apache.kafka.common.serialization.IntegerDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      group-id: lib-event-listener-group
+
+---
