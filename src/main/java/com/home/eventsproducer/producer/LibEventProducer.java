@@ -74,7 +74,9 @@ public class LibEventProducer {
         try {
             Integer key  = libraryEvent.getLibraryEventId();
             String value = objectMapper.writeValueAsString(libraryEvent);
+            log.info("Key : {} "+ key +" and Value: {} "+ value);
             ProducerRecord producerRecord = buildProducerRecord(topic,key,value);
+
             ListenableFuture<SendResult<Integer,String>> listenableFuture =
                     kafkaTemplate.send(producerRecord);
             listenableFuture.addCallback(new ListenableFutureCallback<SendResult<Integer, String>>() {
